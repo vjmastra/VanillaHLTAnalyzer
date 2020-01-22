@@ -9,6 +9,7 @@ cmsenv
 Clone repository and compile:
 ```sh
 mkdir TriggerPerformance
+cd TriggerPerformance
 git clone git@github.com:aboletti/VanillaHLTAnalyzer.git
 cd ..
 scram b -j2
