@@ -415,9 +415,9 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
             
        KalmanVertexFitter kvf; //cout<<"Vertex fit. Trk: "<<itrk1.pt()<<" "<<itrk1.eta()<<" "<<itrk1.phi()<<" "<<muObj1->track()->pt()<<" "<<muObj1->track()->eta()<<" "<<muObj1->track()->phi()<<" "<<muObj2->track()->pt()<<" "<<muObj2->track()->eta()<<" "<<muObj2->track()->phi()<<endl;
        for (std::vector<reco::TransientTrack>::iterator iter = t_tks.begin(); iter!=t_tks.end(); ++iter)
-	 cout<<iter->track().pt()<<" "<<iter->track().eta()<<" "<<iter->track().phi()<<" "<<iter->track().lost()<<" "<<iter->track().found()<<" "<<iter->track().numberOfValidHits()<<endl;
+	 // cout<<iter->track().pt()<<" "<<iter->track().eta()<<" "<<iter->track().phi()<<" "<<iter->track().lost()<<" "<<iter->track().found()<<" "<<iter->track().numberOfValidHits()<<endl;
        TransientVertex tv  = kvf.vertex(t_tks);
-       cout<<"Done!"<<endl;
+       // cout<<"Done!"<<endl;
        if (!tv.isValid()) continue;
        reco::Vertex vertex = tv;
        // hists_["B0InvMass"]->Fill( pB.mass() );
