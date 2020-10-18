@@ -157,8 +157,8 @@ class VanillaHLTAnalyzer : public edm::one::EDAnalyzer<>  {
       std::map < std::string, std::string > * extraFilterMap;
       std::map < std::string, std::string > * trackFilterMap;
 
-      l1t::L1TGlobalUtil *fGtUtil;
-      HLTPrescaleProvider hltPrescale_;
+      /* l1t::L1TGlobalUtil *fGtUtil; */
+      /* HLTPrescaleProvider hltPrescale_; */
       /* bool changedFlag  = true; */
 };
 

@@ -42,15 +42,15 @@ VanillaHLTAnalyzer::VanillaHLTAnalyzer(const edm::ParameterSet& iConfig):
   offlineMuonsTag_        (iConfig.getUntrackedParameter<edm::InputTag>("OfflineMuonsTag")),
   offlineMuonsToken_      (consumes< std::vector<pat::Muon> >(offlineMuonsTag_)), 
   offlineTksTag_          (iConfig.getUntrackedParameter<edm::InputTag>("OfflineTkTag")),
-  offlineTksToken_        (consumes<reco::TrackCollection>(offlineTksTag_)),
+  offlineTksToken_        (consumes<reco::TrackCollection>(offlineTksTag_))
 
-  hltPrescale_ (iConfig, consumesCollector(), *this)
+  // hltPrescale_ (iConfig, consumesCollector(), *this)
   // hltPrescale_ (new HLTPrescaleProvider(iConfig, consumesCollector(), *this))
 
 {
   //now do what ever initialization is needed
   // usesResource("TFileService");
-  fGtUtil = new l1t::L1TGlobalUtil(iConfig, consumesCollector(), *this, iConfig.getParameter<edm::InputTag>("l1results"), iConfig.getParameter<edm::InputTag>("l1results"));
+  // fGtUtil = new l1t::L1TGlobalUtil(iConfig, consumesCollector(), *this, iConfig.getParameter<edm::InputTag>("l1results"), iConfig.getParameter<edm::InputTag>("l1results"));
 
 }
 
@@ -192,25 +192,25 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
    edm::Handle<GlobalAlgBlkBxCollection> l1results;
    iEvent.getByToken(l1results_, l1results);
    
-   if (l1results.isValid()) {  
-     fGtUtil->retrieveL1(iEvent, iSetup, l1results_);
-     const std::vector<std::pair<std::string, bool> > finalDecisions = fGtUtil->decisionsFinal();
-     const std::vector<std::pair<std::string, int> >  prescales = fGtUtil->prescales();
+   // if (l1results.isValid()) {  
+   //   fGtUtil->retrieveL1(iEvent, iSetup, l1results_);
+   //   const std::vector<std::pair<std::string, bool> > finalDecisions = fGtUtil->decisionsFinal();
+   //   const std::vector<std::pair<std::string, int> >  prescales = fGtUtil->prescales();
      
-     for (unsigned int i = 0; i < finalDecisions.size(); ++i) {
-       std::string name = (finalDecisions.at(i)).first;
-       if (name == "NULL" ||
-	   (name.find("DoubleMu")==std::string::npos &&
-	    name.find("SingleMu")==std::string::npos &&
-	    name.find("TripleMu")==std::string::npos)
-	   ) continue;
-       bool resultFin = (finalDecisions.at(i)).second;
-       if (resultFin){
-	 l1tNames    .push_back(name);
-	 l1tPrescales.push_back((prescales.at(i)).second);
-       }
-     }
-   }
+   //   for (unsigned int i = 0; i < finalDecisions.size(); ++i) {
+   //     std::string name = (finalDecisions.at(i)).first;
+   //     if (name == "NULL" ||
+   // 	   (name.find("DoubleMu")==std::string::npos &&
+   // 	    name.find("SingleMu")==std::string::npos &&
+   // 	    name.find("TripleMu")==std::string::npos)
+   // 	   ) continue;
+   //     bool resultFin = (finalDecisions.at(i)).second;
+   //     if (resultFin){
+   // 	 l1tNames    .push_back(name);
+   // 	 l1tPrescales.push_back((prescales.at(i)).second);
+   //     }
+   //   }
+   // }
    
 
    edm::Handle< std::vector<pat::Muon> >  muons;
@@ -414,7 +414,7 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
        if (t_tks.size()!=3) continue;
             
        KalmanVertexFitter kvf; //cout<<"Vertex fit. Trk: "<<itrk1.pt()<<" "<<itrk1.eta()<<" "<<itrk1.phi()<<" "<<muObj1->track()->pt()<<" "<<muObj1->track()->eta()<<" "<<muObj1->track()->phi()<<" "<<muObj2->track()->pt()<<" "<<muObj2->track()->eta()<<" "<<muObj2->track()->phi()<<endl;
-       for (std::vector<reco::TransientTrack>::iterator iter = t_tks.begin(); iter!=t_tks.end(); ++iter)
+       // for (std::vector<reco::TransientTrack>::iterator iter = t_tks.begin(); iter!=t_tks.end(); ++iter)
 	 // cout<<iter->track().pt()<<" "<<iter->track().eta()<<" "<<iter->track().phi()<<" "<<iter->track().lost()<<" "<<iter->track().found()<<" "<<iter->track().numberOfValidHits()<<endl;
        TransientVertex tv  = kvf.vertex(t_tks);
        // cout<<"Done!"<<endl;
@@ -546,17 +546,17 @@ VanillaHLTAnalyzer::initialFreeState( const reco::Track& tk, const MagneticField
 void
 VanillaHLTAnalyzer::beginRun(const edm::Run & run, const edm::EventSetup & iSetup)
 {
-  bool changed(true);
-  if (hltPrescale_.init(run,iSetup,"HLT",changed)) {
-    // if init returns TRUE, initialisation has succeeded!
-    if (changed) {
-      // The HLT config has actually changed wrt the previous Run
-      std::cout << "Initializing HLTConfigProvider"  << std::endl;
-    }
-  } 
-  else {
-    std::cout << " HLT config extraction failure with process name HLT" << std::endl;
-  }
+  // bool changed(true);
+  // if (hltPrescale_.init(run,iSetup,"HLT",changed)) {
+  //   // if init returns TRUE, initialisation has succeeded!
+  //   if (changed) {
+  //     // The HLT config has actually changed wrt the previous Run
+  //     std::cout << "Initializing HLTConfigProvider"  << std::endl;
+  //   }
+  // } 
+  // else {
+  //   std::cout << " HLT config extraction failure with process name HLT" << std::endl;
+  // }
 }
 
 // ------------ method called once each job just before starting event loop  ------------
