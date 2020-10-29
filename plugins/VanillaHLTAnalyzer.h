@@ -29,6 +29,7 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -39,6 +40,10 @@
 
 #include "HLTrigger/HLTcore/interface/HLTPrescaleProvider.h"
 #include "L1Trigger/L1TGlobal/interface/L1TGlobalUtil.h"
+
+
+
+
 
 #include <map>
 #include <string>
@@ -75,6 +80,8 @@ class VanillaHLTAnalyzer : public edm::one::EDAnalyzer<>  {
 
       float deltaR(float eta1, float phi1, float eta2, float phi2);
 
+      void printProgeny( const reco::GenParticle& part);
+
       FreeTrajectoryState initialFreeState( const reco::Track& tk, const MagneticField* field);
 
 
@@ -83,24 +90,17 @@ class VanillaHLTAnalyzer : public edm::one::EDAnalyzer<>  {
       // Trigger process
       edm::InputTag triggerResultTag_;
       edm::EDGetTokenT<edm::TriggerResults>   triggerResultToken_;
-      edm::InputTag triggerTag_;
-      edm::EDGetTokenT< std::vector<pat::TriggerObjectStandAlone> > triggerToken_;
+      /* edm::InputTag triggerTag_; */
+      /* edm::EDGetTokenT< std::vector<pat::TriggerObjectStandAlone> > triggerToken_; */
 
-      edm::EDGetTokenT<pat::PackedTriggerPrescales>            triggerPrescales_;
+      /* edm::EDGetTokenT<pat::PackedTriggerPrescales>            triggerPrescales_; */
 
       /* edm::InputTag l1candTag_; */
       /* edm::EDGetTokenT<l1t::MuonBxCollection> l1candToken_; */
-      edm::EDGetTokenT<GlobalAlgBlkBxCollection> l1results_;
+      /* edm::EDGetTokenT<GlobalAlgBlkBxCollection> l1results_; */
 
-      edm::InputTag offlinePVTag_;
-      edm::EDGetTokenT<reco::VertexCollection> offlinePVToken_;
-      edm::InputTag beamspotTag_;
-      edm::EDGetTokenT<reco::BeamSpot> beamspotToken_;
-
-      edm::InputTag offlineMuonsTag_;
-      edm::EDGetTokenT< std::vector< pat::Muon > > offlineMuonsToken_;
-      edm::InputTag offlineTksTag_;
-      edm::EDGetTokenT<reco::TrackCollection> offlineTksToken_;
+      edm::InputTag genParticlesTag_;
+      edm::EDGetTokenT< std::vector< reco::GenParticle > > genParticlesToken_;
 
       /* HLTPrescaleProvider* prescaleProvider; */
 
@@ -112,21 +112,6 @@ class VanillaHLTAnalyzer : public edm::one::EDAnalyzer<>  {
 
       std::vector<std::string> hltNames;
       std::vector<bool> hltResults;
-      std::vector<bool> hltMatchDimu;
-      std::vector<bool> hltMatchB;
-      std::vector<int> hltPrescales;
-      std::vector<std::string> l1tNames;
-      std::vector<int> l1tPrescales;
-
-      bool doBp = true;
-
-      float Dimuon_CL;
-      float Dimuon_LS;
-      float Dimuon_CosAlpha;
-      float Dimuon_Mass;
-      float Dimuon_pT;
-      float Dimuon_eta;
-      float Dimuon_phi;
 
       float Muon1_pT;
       float Muon1_eta;
@@ -137,25 +122,18 @@ class VanillaHLTAnalyzer : public edm::one::EDAnalyzer<>  {
       float Muon2_phi;
       float Muon2_cha;
 
-      float Bp_CL;
-      float Bp_LS;
-      float Bp_CosAlpha;
-      float Bp_Mass;
-      float Bp_pT;
-      float Bp_eta;
-      float Bp_phi;
+      float track1_pT;
+      float track1_eta;
+      float track1_phi;
+      float track1_cha;
+      float track2_pT;
+      float track2_eta;
+      float track2_phi;
+      float track2_cha;
 
-      float track_pT;
-      float track_eta;
-      float track_phi;
-      float track_cha;
-      float track_d0;
-
-      float nOffVtx;
-
-      std::map < std::string, std::string > * muonFilterMap;
-      std::map < std::string, std::string > * extraFilterMap;
-      std::map < std::string, std::string > * trackFilterMap;
+      /* std::map < std::string, std::string > * muonFilterMap; */
+      /* std::map < std::string, std::string > * extraFilterMap; */
+      /* std::map < std::string, std::string > * trackFilterMap; */
 
       /* l1t::L1TGlobalUtil *fGtUtil; */
       /* HLTPrescaleProvider hltPrescale_; */
