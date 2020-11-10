@@ -102,6 +102,10 @@ class VanillaHLTAnalyzer : public edm::one::EDAnalyzer<>  {
       edm::InputTag genParticlesTag_;
       edm::EDGetTokenT< std::vector< reco::GenParticle > > genParticlesToken_;
 
+      edm::InputTag triggerObjectsTag_;
+      edm::EDGetTokenT<trigger::TriggerEvent>  triggerObjectsToken_;
+
+      std::string hltTag_;
       /* HLTPrescaleProvider* prescaleProvider; */
 
       //tree and content
@@ -130,6 +134,39 @@ class VanillaHLTAnalyzer : public edm::one::EDAnalyzer<>  {
       float track2_eta;
       float track2_phi;
       float track2_cha;
+
+      int passHLT_DoubleMu4_Jpsi_Displaced;
+      int passHLT_DoubleMu4_JpsiTrk_Displaced;
+
+      int muonsMatched;
+
+      bool hltMatchedLeadingTrack;
+      bool hltMatchedSubleadingTrack;
+
+      int JpsiTrackMatched;
+
+      float hlt_Mu1_pT;
+      float hlt_Mu1_eta;
+      float hlt_Mu1_phi;
+      float hlt_Mu1_cha;
+      float hlt_Mu2_pT;
+      float hlt_Mu2_eta;
+      float hlt_Mu2_phi;
+      float hlt_Mu2_cha; 
+
+      float hlt_Track1_pT;
+      float hlt_Track1_eta;
+      float hlt_Track1_phi;   
+      float hlt_Track2_pT;
+      float hlt_Track2_eta;
+      float hlt_Track2_phi; 
+
+      float Mu1_deltaR;
+      float Mu2_deltaR;
+      float Track1_deltaR;
+      float Track2_deltaR;
+
+      int dummy;
 
       /* std::map < std::string, std::string > * muonFilterMap; */
       /* std::map < std::string, std::string > * extraFilterMap; */

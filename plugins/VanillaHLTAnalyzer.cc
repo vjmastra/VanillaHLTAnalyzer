@@ -27,8 +27,12 @@ VanillaHLTAnalyzer::VanillaHLTAnalyzer(const edm::ParameterSet& iConfig):
   triggerResultToken_     (consumes<edm::TriggerResults>(triggerResultTag_)),
 
   genParticlesTag_(iConfig.getUntrackedParameter<edm::InputTag>("genParticles")),
-  genParticlesToken_(consumes< std::vector<reco::GenParticle> >(genParticlesTag_))
+  genParticlesToken_(consumes< std::vector<reco::GenParticle> >(genParticlesTag_)),
 
+  triggerObjectsTag_      (iConfig.getUntrackedParameter<edm::InputTag>("triggerObjects")),
+  triggerObjectsToken_    (consumes<trigger::TriggerEvent>(triggerObjectsTag_)),
+
+  hltTag_                 (iConfig.getUntrackedParameter<std::string>("hltTag"))
   // hltPrescale_ (iConfig, consumesCollector(), *this)
   // hltPrescale_ (new HLTPrescaleProvider(iConfig, consumesCollector(), *this))
 
@@ -82,6 +86,38 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
    track2_phi = 0;
    track2_cha = 0;
 
+   passHLT_DoubleMu4_Jpsi_Displaced = 0;
+   passHLT_DoubleMu4_JpsiTrk_Displaced = 0;
+
+   muonsMatched = 0;
+
+   hltMatchedLeadingTrack = false;
+   hltMatchedSubleadingTrack = false;
+
+   JpsiTrackMatched = 0;
+
+   hlt_Mu1_pT = -10;
+   hlt_Mu1_eta = -10;
+   hlt_Mu1_phi = -10;
+   hlt_Mu1_cha = 0; //not handled
+   hlt_Mu2_pT = -10;
+   hlt_Mu2_eta = -10;
+   hlt_Mu2_phi = -10;
+   hlt_Mu2_cha = 0; //not handled
+   hlt_Track1_pT = -10;
+   hlt_Track1_eta = -10;
+   hlt_Track1_phi = -10;
+   hlt_Track2_pT = -10;
+   hlt_Track2_eta = -10;
+   hlt_Track2_phi = -10;
+
+   Mu1_deltaR = -10;
+   Mu2_deltaR = -10;
+   Track1_deltaR = -10;
+   Track2_deltaR = -10;
+
+   dummy = 0;
+
    edm::Handle<edm::TriggerResults> triggerResults;
 
    if ( !(iEvent.getByToken(triggerResultToken_, triggerResults) ) ) {
@@ -99,6 +135,14 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
      }
    }
 
+   for (unsigned int i = 0; i < hltNames.size(); i++) {
+     if (hltNames[i].find("HLT_DoubleMu4_Jpsi_Displaced_v") != std::string::npos)
+       hltResults[i] == 1 ? passHLT_DoubleMu4_Jpsi_Displaced = 1 : passHLT_DoubleMu4_Jpsi_Displaced = 0;
+     if (hltNames[i].find("HLT_DoubleMu4_JpsiTrk_Displaced_v") != std::string::npos)
+       hltResults[i] == 1 ? passHLT_DoubleMu4_JpsiTrk_Displaced = 1 : passHLT_DoubleMu4_JpsiTrk_Displaced = 0;
+   }    
+
+   //Look for gen particles
 
    edm::Handle< std::vector<reco::GenParticle> >  genParticles;
    iEvent.getByToken(genParticlesToken_, genParticles);
@@ -107,8 +151,8 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
      if ( abs(genBs->pdgId()) != 531 ) continue;
 
-     printProgeny(*genBs);
-     cout<<endl;
+//     printProgeny(*genBs);
+//     cout<<endl;
 
      const reco::Candidate* genMu1 = 0;
      const reco::Candidate* genMu2 = 0;
@@ -122,7 +166,7 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
        if ( genBs->daughter(iDaug)->pdgId() == 443 ) {
 
-	 cout<<"Jpsi found!"<<endl;
+	 //cout<<"Jpsi found!"<<endl;
 	 const reco::GenParticle* genJpsi = (reco::GenParticle*)genBs->daughter(iDaug);
 
 	 for (uint iGrandDaug1=0; iGrandDaug1<genJpsi->numberOfDaughters(); ++iGrandDaug1) {
@@ -134,7 +178,7 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	     if ( genJpsi->daughter(iGrandDaug2)->pt() > genJpsi->daughter(iGrandDaug1)->pt() ) continue;
 	     if ( genJpsi->daughter(iGrandDaug2)->pdgId()*genJpsi->daughter(iGrandDaug1)->pdgId() > 0 ) continue;
 
-	     cout<<"Muons from Jpsi decay found!"<<endl;
+	     //cout<<"Muons from Jpsi decay found!"<<endl;
 	     muonPairFound = true;
 	     genMu1 = genJpsi->daughter(iGrandDaug1);
 	     genMu2 = genJpsi->daughter(iGrandDaug2);
@@ -144,11 +188,11 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	   if (muonPairFound) break;
 	 }
 
-       }
+       }//end Jpsi if
 
        if ( genBs->daughter(iDaug)->pdgId() == 333 ) {
 
-	 cout<<"Phi found!"<<endl;
+	 //cout<<"Phi found!"<<endl;
 	 const reco::GenParticle* genPhi = (reco::GenParticle*)genBs->daughter(iDaug);
 
 	 for (uint iGrandDaug1=0; iGrandDaug1<genPhi->numberOfDaughters(); ++iGrandDaug1) {
@@ -160,7 +204,7 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	     if ( genPhi->daughter(iGrandDaug2)->pt() > genPhi->daughter(iGrandDaug1)->pt() ) continue;
 	     if ( genPhi->daughter(iGrandDaug2)->pdgId()*genPhi->daughter(iGrandDaug1)->pdgId() > 0 ) continue;
 
-	     cout<<"Kaons from Psi decay found!"<<endl;
+	     //cout<<"Kaons from Psi decay found!"<<endl;
 	     kaonPairFound = true;
 	     genKaon1 = genPhi->daughter(iGrandDaug1);
 	     genKaon2 = genPhi->daughter(iGrandDaug2);
@@ -170,13 +214,13 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	   if (kaonPairFound) break;
 	 }
 
-       }
+       }//end phi if
 	 
-     }
+     }//end daug for
 
      if ( !muonPairFound || !kaonPairFound ) continue;
 
-     cout<<"Bs accepted"<<endl;
+//     cout<<"Bs accepted"<<endl;
 
      Muon1_pT  = genMu1->pt();
      Muon1_eta = genMu1->eta();
@@ -196,9 +240,106 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
      track2_phi = genKaon2->phi();
      track2_cha = genKaon2->charge();
 
+     //Match with trigger object
+
+     edm::Handle<trigger::TriggerEvent> triggerObjectsSummary;
+     iEvent.getByToken(triggerObjectsToken_, triggerObjectsSummary);
+     trigger::TriggerObjectCollection selectedObjects;
+
+     bool matchMuon1 = false;
+     bool matchMuon2 = false;
+     bool matchTrack = false;
+
+     std::vector<float> hltTriggerObjects_pT;
+     std::vector<float> hltTriggerObjects_eta;
+     std::vector<float> hltTriggerObjects_phi;
+ 
+     if (passHLT_DoubleMu4_Jpsi_Displaced) {
+       if(triggerObjectsSummary.isValid()) {
+         size_t filterIndex = (*triggerObjectsSummary).filterIndex( edm::InputTag("hltDisplacedmumuFilterDoubleMu4Jpsi", "", hltTag_) );
+         trigger::TriggerObjectCollection allTriggerObjects = triggerObjectsSummary->getObjects();
+         if (filterIndex < (*triggerObjectsSummary).sizeFilters()) {
+           const trigger::Keys &keys = (*triggerObjectsSummary).filterKeys(filterIndex);
+           for (size_t j = 0; j < keys.size(); j++) {
+             trigger::TriggerObject foundObject = (allTriggerObjects)[keys[j]]; //0 Mu1 1 Mu2 ...
+             hltTriggerObjects_pT.push_back(foundObject.pt()); 
+             hltTriggerObjects_eta.push_back(foundObject.eta());
+             hltTriggerObjects_phi.push_back(foundObject.phi());
+           }
+         }
+       }//end triggerObjects
+
+       float dRthreshold = 0.03;
+       for (unsigned int i = 0; i < hltTriggerObjects_pT.size(); i++) {
+         float dR1 = deltaR(Muon1_eta, Muon1_phi, hltTriggerObjects_eta[i], hltTriggerObjects_phi[i]);
+         float dR2 = deltaR(Muon2_eta, Muon2_phi, hltTriggerObjects_eta[i], hltTriggerObjects_phi[i]);
+         if (dR1 < dRthreshold) {
+           hlt_Mu1_pT = hltTriggerObjects_pT[i];
+           hlt_Mu1_eta = hltTriggerObjects_eta[i];
+           hlt_Mu1_phi = hltTriggerObjects_phi[i];
+           Mu1_deltaR = dR1;
+           matchMuon1 = true;
+         }
+         if (dR2 < dRthreshold) {
+           hlt_Mu2_pT = hltTriggerObjects_pT[i];
+           hlt_Mu2_eta = hltTriggerObjects_eta[i];
+           hlt_Mu2_phi = hltTriggerObjects_phi[i];
+           Mu2_deltaR = dR2;
+           matchMuon2 = true;
+         }
+       }      
+     }//end passHLT
+
+     //al momento non èescluso che i muoni vengano da due diverse jpsi che hanno fatto scattare il trigger
+     muonsMatched = matchMuon1 && matchMuon2;
+
+     hltTriggerObjects_pT.clear();
+     hltTriggerObjects_eta.clear();
+     hltTriggerObjects_phi.clear();
+
+     if (passHLT_DoubleMu4_JpsiTrk_Displaced) {
+       if (triggerObjectsSummary.isValid()) {
+         size_t filterIndex = (*triggerObjectsSummary).filterIndex( edm::InputTag("hltJpsiTkVertexFilter", "", hltTag_) );
+         trigger::TriggerObjectCollection allTriggerObjects = triggerObjectsSummary->getObjects();
+         if (filterIndex < (*triggerObjectsSummary).sizeFilters()) {
+           const trigger::Keys &keys = (*triggerObjectsSummary).filterKeys(filterIndex);
+           for (size_t j = 0; j < keys.size(); j++) {
+             trigger::TriggerObject foundObject = (allTriggerObjects)[keys[j]]; //0 Mu1_A 1 Mu2_A 2 Tk_A 3 Mu1_B 4 Mu2_B 5 Tk_B ... (can be same muon pair and different associated track)
+             hltTriggerObjects_pT.push_back(foundObject.pt()); 
+             hltTriggerObjects_eta.push_back(foundObject.eta()); 
+             hltTriggerObjects_phi.push_back(foundObject.phi());
+           }
+         }
+       }//end triggerObjects
+
+       float dRthreshold = 0.03;
+       for (unsigned int i = 2; i < hltTriggerObjects_pT.size(); i=i+3) {//loop on tracks only
+         float dR1 = deltaR(track1_eta, track1_phi, hltTriggerObjects_eta[i], hltTriggerObjects_phi[i]);
+         float dR2 = deltaR(track2_eta, track2_phi, hltTriggerObjects_eta[i], hltTriggerObjects_phi[i]);
+         if (dR1 < dRthreshold) {
+           hlt_Track1_pT = hltTriggerObjects_pT[i];
+           hlt_Track1_eta = hltTriggerObjects_eta[i];
+           hlt_Track1_phi = hltTriggerObjects_phi[i];
+           Track1_deltaR = dR1;
+           hltMatchedLeadingTrack = true;
+         }
+         if (dR2 < dRthreshold) {
+           hlt_Track2_pT = hltTriggerObjects_pT[i];
+           hlt_Track2_eta = hltTriggerObjects_eta[i];
+           hlt_Track2_phi = hltTriggerObjects_phi[i];
+           Track2_deltaR = dR2;
+           hltMatchedSubleadingTrack = true;
+         }
+       } 
+
+       matchTrack = hltMatchedLeadingTrack || hltMatchedSubleadingTrack;
+     }//end passHLT
+
+     JpsiTrackMatched = muonsMatched && matchTrack;
+
      outTree->Fill();
 
-   }
+   }//end Bs for
 
 }
 
@@ -277,6 +418,39 @@ VanillaHLTAnalyzer::beginJob()
   outTree->Branch("track2_eta", &track2_eta );
   outTree->Branch("track2_phi", &track2_phi );
   outTree->Branch("track2_cha", &track2_cha );
+
+  outTree->Branch("passHLT_DoubleMu4_Jpsi_Displaced", &passHLT_DoubleMu4_Jpsi_Displaced );
+  outTree->Branch("passHLT_DoubleMu4_JpsiTrk_Displaced", &passHLT_DoubleMu4_JpsiTrk_Displaced );
+
+  outTree->Branch("muonsMatched", &muonsMatched );
+
+  outTree->Branch("hltMatchedLeadingTrack", &hltMatchedLeadingTrack );
+  outTree->Branch("hltMatchedSubleadingTrack", &hltMatchedSubleadingTrack );
+
+  outTree->Branch("JpsiTrackMatched", &JpsiTrackMatched );
+
+  outTree->Branch("hlt_Mu1_pT", &hlt_Mu1_pT );
+  outTree->Branch("hlt_Mu1_eta", &hlt_Mu1_eta );
+  outTree->Branch("hlt_Mu1_phi", &hlt_Mu1_phi );
+  outTree->Branch("hlt_Mu1_cha", &hlt_Mu1_cha );
+  outTree->Branch("hlt_Mu2_pT", &hlt_Mu2_pT );
+  outTree->Branch("hlt_Mu2_eta", &hlt_Mu2_eta );
+  outTree->Branch("hlt_Mu2_phi", &hlt_Mu2_phi );
+  outTree->Branch("hlt_Mu2_cha", &hlt_Mu2_cha );
+
+  outTree->Branch("hlt_Track1_pT", &hlt_Track1_pT );
+  outTree->Branch("hlt_Track1_eta", &hlt_Track1_eta );
+  outTree->Branch("hlt_Track1_phi", &hlt_Track1_phi );
+  outTree->Branch("hlt_Track2_pT", &hlt_Track2_pT );
+  outTree->Branch("hlt_Track2_eta", &hlt_Track2_eta );
+  outTree->Branch("hlt_Track2_phi", &hlt_Track2_phi );
+
+  outTree->Branch("Mu1_deltaR", &Mu1_deltaR );
+  outTree->Branch("Mu2_deltaR", &Mu2_deltaR );
+  outTree->Branch("Track1_deltaR", &Track1_deltaR );
+  outTree->Branch("Track2_deltaR", &Track2_deltaR );
+
+  outTree->Branch("dummy", &dummy);
 
   // muonFilterMap = new std::map<std::string, std::string>();
 
