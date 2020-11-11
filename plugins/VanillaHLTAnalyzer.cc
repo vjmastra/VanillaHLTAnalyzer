@@ -269,7 +269,7 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
          }
        }//end triggerObjects
 
-       float dRthreshold = 0.03;
+       float dRthreshold = 0.01;
        for (unsigned int i = 0; i < hltTriggerObjects_pT.size(); i++) {
          float dR1 = deltaR(Muon1_eta, Muon1_phi, hltTriggerObjects_eta[i], hltTriggerObjects_phi[i]);
          float dR2 = deltaR(Muon2_eta, Muon2_phi, hltTriggerObjects_eta[i], hltTriggerObjects_phi[i]);
@@ -312,7 +312,7 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
          }
        }//end triggerObjects
 
-       float dRthreshold = 0.03;
+       float dRthreshold = 0.01;
        for (unsigned int i = 2; i < hltTriggerObjects_pT.size(); i=i+3) {//loop on tracks only
          float dR1 = deltaR(track1_eta, track1_phi, hltTriggerObjects_eta[i], hltTriggerObjects_phi[i]);
          float dR2 = deltaR(track2_eta, track2_phi, hltTriggerObjects_eta[i], hltTriggerObjects_phi[i]);
