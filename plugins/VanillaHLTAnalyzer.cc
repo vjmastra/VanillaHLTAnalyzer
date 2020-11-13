@@ -248,7 +248,10 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
      bool matchMuon1 = false;
      bool matchMuon2 = false;
+     bool matchHltMuon1 = false;
+     bool matchHltMuon2 = false;
      bool matchTrack = false;
+     bool matchTrackToJpsi = false;
 
      std::vector<float> hltTriggerObjects_pT;
      std::vector<float> hltTriggerObjects_eta;
@@ -270,27 +273,24 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
        }//end triggerObjects
 
        float dRthreshold = 0.01;
-       for (unsigned int i = 0; i < hltTriggerObjects_pT.size(); i++) {
+       for (unsigned int i = 0; i < hltTriggerObjects_pT.size(); i=i+2) { //To get muons from same jpsi
          float dR1 = deltaR(Muon1_eta, Muon1_phi, hltTriggerObjects_eta[i], hltTriggerObjects_phi[i]);
-         float dR2 = deltaR(Muon2_eta, Muon2_phi, hltTriggerObjects_eta[i], hltTriggerObjects_phi[i]);
-         if (dR1 < dRthreshold) {
+         float dR2 = deltaR(Muon2_eta, Muon2_phi, hltTriggerObjects_eta[i+1], hltTriggerObjects_phi[i+1]);
+         if (dR1 < dRthreshold && dR2 < dRthreshold) {
            hlt_Mu1_pT = hltTriggerObjects_pT[i];
            hlt_Mu1_eta = hltTriggerObjects_eta[i];
            hlt_Mu1_phi = hltTriggerObjects_phi[i];
            Mu1_deltaR = dR1;
            matchMuon1 = true;
-         }
-         if (dR2 < dRthreshold) {
-           hlt_Mu2_pT = hltTriggerObjects_pT[i];
-           hlt_Mu2_eta = hltTriggerObjects_eta[i];
-           hlt_Mu2_phi = hltTriggerObjects_phi[i];
+           hlt_Mu2_pT = hltTriggerObjects_pT[i+1];
+           hlt_Mu2_eta = hltTriggerObjects_eta[i+1];
+           hlt_Mu2_phi = hltTriggerObjects_phi[i+1];
            Mu2_deltaR = dR2;
            matchMuon2 = true;
          }
        }      
      }//end passHLT
 
-     //al momento non èescluso che i muoni vengano da due diverse jpsi che hanno fatto scattare il trigger
      muonsMatched = matchMuon1 && matchMuon2;
 
      hltTriggerObjects_pT.clear();
@@ -312,30 +312,36 @@ VanillaHLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
          }
        }//end triggerObjects
 
+       float dPtRelThreshold = 0.01;
        float dRthreshold = 0.01;
-       for (unsigned int i = 2; i < hltTriggerObjects_pT.size(); i=i+3) {//loop on tracks only
-         float dR1 = deltaR(track1_eta, track1_phi, hltTriggerObjects_eta[i], hltTriggerObjects_phi[i]);
-         float dR2 = deltaR(track2_eta, track2_phi, hltTriggerObjects_eta[i], hltTriggerObjects_phi[i]);
+       for (unsigned int i = 0; i < hltTriggerObjects_pT.size(); i=i+3) { //loop on groups Mu1 Mu2 Tk
+         //check that Jpsi in hltJpsiTrk is the same from hltJpsi
+         matchHltMuon1 = (deltaPtOverPt(hlt_Mu1_pT, hltTriggerObjects_pT[i+0]) < dPtRelThreshold && deltaR(hlt_Mu1_eta, hlt_Mu1_phi, hltTriggerObjects_eta[i+0], hltTriggerObjects_phi[i+0]) < dRthreshold);
+         matchHltMuon2 = (deltaPtOverPt(hlt_Mu2_pT, hltTriggerObjects_pT[i+1]) < dPtRelThreshold && deltaR(hlt_Mu2_eta, hlt_Mu2_phi, hltTriggerObjects_eta[i+1], hltTriggerObjects_phi[i+1]) < dRthreshold);
+         //match trk from hltJpsiTrk to gen track
+         float dR1 = deltaR(track1_eta, track1_phi, hltTriggerObjects_eta[i+2], hltTriggerObjects_phi[i+2]);
+         float dR2 = deltaR(track2_eta, track2_phi, hltTriggerObjects_eta[i+2], hltTriggerObjects_phi[i+2]);
          if (dR1 < dRthreshold) {
-           hlt_Track1_pT = hltTriggerObjects_pT[i];
-           hlt_Track1_eta = hltTriggerObjects_eta[i];
-           hlt_Track1_phi = hltTriggerObjects_phi[i];
+           hlt_Track1_pT = hltTriggerObjects_pT[i+2];
+           hlt_Track1_eta = hltTriggerObjects_eta[i+2];
+           hlt_Track1_phi = hltTriggerObjects_phi[i+2];
            Track1_deltaR = dR1;
            hltMatchedLeadingTrack = true;
          }
          if (dR2 < dRthreshold) {
-           hlt_Track2_pT = hltTriggerObjects_pT[i];
-           hlt_Track2_eta = hltTriggerObjects_eta[i];
-           hlt_Track2_phi = hltTriggerObjects_phi[i];
+           hlt_Track2_pT = hltTriggerObjects_pT[i+2];
+           hlt_Track2_eta = hltTriggerObjects_eta[i+2];
+           hlt_Track2_phi = hltTriggerObjects_phi[i+2];
            Track2_deltaR = dR2;
            hltMatchedSubleadingTrack = true;
          }
        } 
 
        matchTrack = hltMatchedLeadingTrack || hltMatchedSubleadingTrack;
+       matchTrackToJpsi = matchHltMuon1 && matchHltMuon2 && matchTrack;
      }//end passHLT
 
-     JpsiTrackMatched = muonsMatched && matchTrack;
+     JpsiTrackMatched = muonsMatched && matchTrackToJpsi;
 
      outTree->Fill();
 
@@ -351,6 +357,25 @@ VanillaHLTAnalyzer::deltaR(float eta1, float phi1, float eta2, float phi2)
   if ( dPhi > TMath::Pi() )  dPhi = 2*TMath::Pi() - dPhi;
 
   return sqrt( (eta1-eta2)*(eta1-eta2) + dPhi*dPhi );
+}
+
+float
+VanillaHLTAnalyzer::deltaPtOverPt(float pt1, float pt2)
+{
+  float deltaPt = fabs(pt1 - pt2);
+  float deltaPtOverPt = 0;
+
+  if (pt1 == 0) {
+    if (pt2 == 0) {
+      deltaPtOverPt = 0;
+    } else {
+      deltaPtOverPt = deltaPt/pt2;
+      }
+  } else {
+    deltaPtOverPt = deltaPt/pt1;
+    }
+ 
+  return deltaPtOverPt;
 }
 
 void

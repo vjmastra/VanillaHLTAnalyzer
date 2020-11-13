@@ -80,6 +80,8 @@ class VanillaHLTAnalyzer : public edm::one::EDAnalyzer<>  {
 
       float deltaR(float eta1, float phi1, float eta2, float phi2);
 
+      float deltaPtOverPt(float pt1, float pt2);
+
       void printProgeny( const reco::GenParticle& part);
 
       FreeTrajectoryState initialFreeState( const reco::Track& tk, const MagneticField* field);
