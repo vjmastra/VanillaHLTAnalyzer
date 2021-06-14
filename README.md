@@ -1,4 +1,5 @@
 Working code in the "buildBsCandidateFromGEN" branch.
+
 This repo is meant to set up some code to run efficiency/fake rate measurements
 for BPH HLT trigger paths.
 
@@ -14,16 +15,19 @@ Clone repository and compile:
 ```sh
 mkdir TriggerPerformance
 cd TriggerPerformance
-git clone git@github.com:vjmastra/VanillaHLTAnalyzer.git
+git clone https://github.com/vjmastra/VanillaHLTAnalyzer.git
 git checkout buildBsCandidatesFromGEN
 cd ..
 scram b -j4
 ```
--------------------------------------------------------
-Copy configuration file:
-```sh
-wget https://gist.githubusercontent.com/aboletti/947b4bd0e9629ce6e2d7ad55811be5e7/raw/RunNtuple_miniAOD.py
-```
-and run on crab or local file.
 
-Read the output files and produce the plots with [this macro](https://gist.github.com/aboletti/a0776d7e35e444b3c452933de52ca39e), adjusting the paths for the input files.
+A test configuration file is available (./python/hltGPU_JpsiTrkMenu.py).
+Input files (with corresponding global tag) and other options can be changed in the file.
+To run the menu:
+```sh
+cd python
+nohup taskset -c 0-3 cmsRun hltGPU_JpsiTrkMenu.py &> log &
+```
+
+The menu calls the analyzer (./plugins/VanillaHLTAnalyzer.\*) to output root files,
+which can be analyzed with some scripts (included in the repo)
